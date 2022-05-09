@@ -29,8 +29,8 @@ num_of_workers = 2
 
 
 DATA_PATH_TRAIN = Path(
-    'F:\\Uni\\4\\Spring\\KDL\\dataset\\Train\\Test\\train')
-DATA_PATH_VAL = Path('F:\\Uni\\4\\Spring\\KDL\\dataset\\Train\\Test\\val')
+    'D:\\Data_mining\\Dataset\\train')
+DATA_PATH_VAL = Path('D:\\Data_mining\\Dataset\\val')
 
 trans = transforms.Compose([
     transforms.RandomHorizontalFlip(),
@@ -164,7 +164,7 @@ def show_loss_accuracy():
     loss_plt.set_title('Train vs Valid Loss')
 
     fig_name = datetime.now().strftime(f'%Y-%m-%dT%H-%M-%S')
-    plt.savefig(f"F:\\Uni\\4\\Spring\\KDL\\Data-mining-project\\fig\\{fig_name}.png")
+    plt.savefig(f"D:\\Data_mining\\fig\\{fig_name}.png")
     plt.show()
 
 
