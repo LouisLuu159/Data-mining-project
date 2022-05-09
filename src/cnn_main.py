@@ -15,6 +15,7 @@ import os
 import math
 
 from pathlib import Path
+from datetime import datetime
 
 # Hyperparameters.
 num_epochs = 30
@@ -26,35 +27,9 @@ num_classes = 6
 num_of_workers = 6
 
 
-def count_trainSet_size():
-    size = 0
-    for root, directories, filenames in os.walk('D:\\Data_mining\\Train\\Train'):
-        for files in filenames:
-            size = size+1
-    return size
-
-
-def count_validSet_size():
-    size = 0
-    for root, directories, filenames in os.walk('D:\\Data_mining\\test'):
-        for files in filenames:
-            size = size+1
-    return size
-
-
-number_of_traning_files = count_trainSet_size()
-number_of_val_files = count_validSet_size()
-
-
-def get_new_learning_rate():
-    return optimizer.param_groups[0]['lr']
-    # return learning_rate / 2 * (1 + math.cos(epoch * math.pi / num_epochs))
-
-
 DATA_PATH_TRAIN = Path(
-    'D:\\Data_mining\\Train\\Train')
-DATA_PATH_VAL = Path('D:\\Data_mining\\test')
-MODEL_STORE_PATH = Path('D:\\Data_mining\\model')
+    'D:\\Data_mining\\Dataset\\train')
+DATA_PATH_VAL = Path('D:\\Data_mining\\Dataset\\val')
 
 trans = transforms.Compose([
     transforms.RandomHorizontalFlip(),
@@ -74,6 +49,10 @@ train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size,
                           shuffle=True, num_workers=num_of_workers)
 val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size,
                         shuffle=False, num_workers=num_of_workers)
+
+number_of_traning_files = len(train_loader.dataset)
+number_of_val_files = len(val_loader.dataset)
+
 
 # CNN we are going to implement.
 
@@ -155,7 +134,36 @@ optimizer = Adam(model.parameters(), lr=learning_rate,
 # optimizer1 = SGD(model.parameters(), lr=learning_rate,
 #                  weight_decay=weight_decay)
 loss_fn = nn.CrossEntropyLoss()
+# Learing rate scheduler
 scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5)
+train_acc_arr = []
+train_loss_arr = []
+val_acc_arr = []
+val_loss_arr = []
+
+
+def show_loss_accuracy():
+
+    fig = plt.figure()
+    acc_plt = fig.add_subplot(1, 2, 1)
+    acc_plt.plot(train_acc_arr, '-o')
+    acc_plt.plot(val_acc_arr, '-o')
+    acc_plt.set_xlabel('epoch')
+    acc_plt.set_ylabel('accuracy')
+    acc_plt.legend(['Train', 'Valid'])
+    acc_plt.set_title('Train vs Valid Accuracy')
+
+    loss_plt = fig.add_subplot(1, 2, 2)
+    loss_plt.plot(train_loss_arr, '-o')
+    loss_plt.plot(val_loss_arr, '-o')
+    loss_plt.set_xlabel('epoch')
+    loss_plt.set_ylabel('loss')
+    loss_plt.legend(['Train', 'Valid'])
+    loss_plt.set_title('Train vs Valid Loss')
+
+    fig_name = datetime.now().strftime(f'%Y-%m-%dT%H-%M-%S')
+    plt.savefig(f"D:\\Data_mining\\fig\\{fig_name}.png")
+    plt.show()
 
 
 def save_models(epoch):
@@ -180,13 +188,13 @@ def validate():
         val_acc += torch.sum(prediction == labels.data).float()
 
         val_step_loss = loss_fn(outputs, labels)
-        val_loss += val_step_loss.cpu().data * images.size(0)
+        val_loss += val_step_loss.item() * images.size(0)
 
     # Compute the average acc and loss over all 10000 val images
     print(f"Val Acc: {val_acc}")
     val_acc = val_acc / number_of_val_files * 100
-    val_loss = val_loss / (number_of_val_files*2)
-    scheduler.step(val_loss/len(val_loader))
+    val_loss = val_loss / len(val_loader)
+    scheduler.step(val_loss)
 
     return (val_acc, val_loss)
 
@@ -216,17 +224,17 @@ def train(num_epoch):
             # Adjust parameters according to the computed gradients
             optimizer.step()
 
-            train_loss += loss.cpu().data * images.size(0)
+            train_loss += loss.item() * images.size(0)
             _, prediction = torch.max(outputs.data, 1)
 
             train_acc += torch.sum(prediction == labels.data).float()
 
-        learning_rate = get_new_learning_rate()
+        learning_rate = optimizer.param_groups[0]['lr']
         print(
-            f"Train loss: {train_loss}, Train Acc: {train_acc}, Learning rate: {learning_rate}, Weight decay: {weight_decay}")
+            f"Learning rate: {learning_rate}, Weight decay: {weight_decay}")
         # Compute the average acc and loss over all 50000 training images
         train_acc = train_acc / number_of_traning_files * 100
-        train_loss = train_loss / (number_of_traning_files*2)
+        train_loss = train_loss / len(train_loader)
 
         # Evaluate on the val set
         val_acc, val_loss = validate()
@@ -236,13 +244,20 @@ def train(num_epoch):
             save_models(epoch)
             best_acc = val_acc
 
+        train_acc_arr.append(train_acc)
+        train_loss_arr.append(train_loss)
+        val_acc_arr.append(val_acc)
+        val_loss_arr.append(val_loss)
+
         # Print the metrics
         print(
             f"Epoch {epoch + 1}, Train Accuracy: {train_acc} , TrainLoss: {train_loss} , Val Accuracy: {val_acc}, Val Loss: {val_loss}")
-        # Call the learning rate adjustment function
 
 
 if __name__ == '__main__':
     print("Number of files: {}".format(number_of_traning_files))  # 5198
+    print(
+        f"Train loader length: {len(train_loader.dataset)}, Val loader length: {len(val_loader.dataset)}")
     freeze_support()
     train(num_epochs)
+    show_loss_accuracy()
