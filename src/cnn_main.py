@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader, Sampler
 from torchvision import datasets
 from torchvision.transforms import transforms
 from torch.optim import Adam, SGD
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import StepLR
 
 import matplotlib.pyplot as plt
@@ -56,8 +55,6 @@ number_of_val_files = len(val_loader.dataset)
 
 
 # CNN we are going to implement.
-
-
 class Unit(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(Unit, self).__init__()
@@ -132,11 +129,9 @@ if cuda_avail:
 # Define the optimizer and loss function
 optimizer = Adam(model.parameters(), lr=learning_rate,
                  weight_decay=weight_decay)
-# optimizer1 = SGD(model.parameters(), lr=learning_rate,
-#                  weight_decay=weight_decay)
 loss_fn = nn.CrossEntropyLoss()
+
 # Learing rate scheduler
-# scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5)
 scheduler = StepLR(optimizer, step_size=5, gamma=0.1)
 train_acc_arr = []
 train_loss_arr = []
@@ -192,7 +187,7 @@ def validate():
         val_step_loss = loss_fn(outputs, labels)
         val_loss += val_step_loss.item() * images.size(0)
 
-    # Compute the average acc and loss over all 10000 val images
+    # Compute the average acc and loss
     print(f"Val Acc: {val_acc}")
     val_acc = val_acc / number_of_val_files * 100
     val_loss = val_loss / len(val_loader)
