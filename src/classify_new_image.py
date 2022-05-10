@@ -42,27 +42,7 @@ def get_predicted_label(path):
     return labels[prediction]
 
 
-# original folder contain image's test folder, use this to test predicted label
-original_image_file_path = 'D:\\Data_mining\\Dataset\\val'
-
 predicted_labels = []
-predicted_label_status = []
-wrong_predict_count = 0
-
-# rootdir = 'D:\\Data_mining\\val'  # test folder
-# for rootdir, dirs, files in os.walk(rootdir):
-#     for filename in files:
-#         predicted_label = get_predicted_label(os.path.join(rootdir, filename))
-#         predicted_labels.append(predicted_label)
-#         if(os.path.exists(os.path.join(original_image_file_path, predicted_label, filename))):
-#             predicted_label_status.append(True)
-#         else:
-#             wrong_predict_count += 1
-#             predicted_label_status.append(False)
-
-# wrong_predict_ratio = wrong_predict_count / len(predicted_labels) * 100
-# print(f"Predict label: {predicted_labels}")
-# print(f"Wrong label ratio: {wrong_predict_ratio}")
 
 
 rootdir = 'D:\\Data_mining\\val'  # test folder
