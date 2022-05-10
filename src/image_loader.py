@@ -31,13 +31,13 @@ batch_size = 100
 num_of_workers = 5
 
 DATA_PATH_TRAIN = Path(
-    'D:\\Data_mining\\Dataset\\test_load_image')
-DATA_PATH_TEST = Path('D:\\Data_mining\\Dataset\\test')
+    'D:\\Data_mining\\Dataset\\train')
+DATA_PATH_TEST = Path('D:\\Data_mining\\Dataset\\val')
 
 trans = transforms.Compose([
     transforms.RandomHorizontalFlip(),
     transforms.Resize(32),
-    transforms.CenterCrop(28),
+    transforms.CenterCrop(32),
     transforms.RandomRotation(20),
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))

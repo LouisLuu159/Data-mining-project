@@ -7,7 +7,6 @@ from torch.utils.data import DataLoader, Sampler
 from torchvision import datasets
 from torchvision.transforms import transforms
 from torch.optim import Adam, SGD
-from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torch.optim.lr_scheduler import StepLR
 
 import matplotlib.pyplot as plt
@@ -29,8 +28,8 @@ num_of_workers = 2
 
 
 DATA_PATH_TRAIN = Path(
-    'F:\\Uni\\4\\Spring\\KDL\\dataset\\Train\\Test\\train')
-DATA_PATH_VAL = Path('F:\\Uni\\4\\Spring\\KDL\\dataset\\Train\\Test\\val')
+    'D:\\Data_mining\\Dataset\\train')
+DATA_PATH_VAL = Path('D:\\Data_mining\\Dataset\\val')
 
 trans = transforms.Compose([
     transforms.RandomHorizontalFlip(),
@@ -56,8 +55,6 @@ number_of_val_files = len(val_loader.dataset)
 
 
 # CNN we are going to implement.
-
-
 class Unit(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(Unit, self).__init__()
@@ -132,11 +129,9 @@ if cuda_avail:
 # Define the optimizer and loss function
 optimizer = Adam(model.parameters(), lr=learning_rate,
                  weight_decay=weight_decay)
-# optimizer1 = SGD(model.parameters(), lr=learning_rate,
-#                  weight_decay=weight_decay)
 loss_fn = nn.CrossEntropyLoss()
+
 # Learing rate scheduler
-# scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5)
 scheduler = StepLR(optimizer, step_size=5, gamma=0.1)
 train_acc_arr = []
 train_loss_arr = []
@@ -164,7 +159,7 @@ def show_loss_accuracy():
     loss_plt.set_title('Train vs Valid Loss')
 
     fig_name = datetime.now().strftime(f'%Y-%m-%dT%H-%M-%S')
-    plt.savefig(f"F:\\Uni\\4\\Spring\\KDL\\Data-mining-project\\fig\\{fig_name}.png")
+    plt.savefig(f"D:\\Data_mining\\fig\\{fig_name}.png")
     plt.show()
 
 
@@ -192,7 +187,7 @@ def validate():
         val_step_loss = loss_fn(outputs, labels)
         val_loss += val_step_loss.item() * images.size(0)
 
-    # Compute the average acc and loss over all 10000 val images
+    # Compute the average acc and loss
     print(f"Val Acc: {val_acc}")
     val_acc = val_acc / number_of_val_files * 100
     val_loss = val_loss / len(val_loader)
